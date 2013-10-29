@@ -49,6 +49,8 @@ if you intend to use this quad/octree for collisions, as it is much faster than
 using GeomNodes.
 """
 
+from pandac.PandaModules import *
+
 def getCenter(vertexList):
     """ Get a list of Polywraps and figure out their center """
     # Loop on the vertices determine the bounding box
@@ -142,7 +144,7 @@ def genPolyWraps(vdata, prim):
         yield pw
 
 def recr(quadrants, vdata, prim, type, maxDensity, verbose, quadsplitter, \
-        indent=0):
+        indent=0, name='leaf-'):
     """
     Visit each quadrant and create a tree.
 
@@ -173,7 +175,7 @@ def recr(quadrants, vdata, prim, type, maxDensity, verbose, quadsplitter, \
             if verbose: print "    "*indent," triangle center", center, len(quadrant)
             p = GeomTriangles(Geom.UHStatic)
             if type is 'colpoly':
-                colNode = CollisionNode('leaf-%i'%indent)
+                colNode = CollisionNode(name+'%i'%indent)
             for pw in quadrant:
                 s = prim.getPrimitiveStart(pw.polygon)
                 e = prim.getPrimitiveEnd(pw.polygon)
@@ -222,7 +224,7 @@ def recr(quadrants, vdata, prim, type, maxDensity, verbose, quadsplitter, \
             yield node
 
 def octreefy(node, type='geom', maxDensity=4, verbose=0, \
-    normal=False, texcoord=False, binormal=False):
+    normal=False, texcoord=False, binormal=False, name='leaf-'):
     """
     Octreefy this node and it's children.
 
@@ -266,7 +268,7 @@ def octreefy(node, type='geom', maxDensity=4, verbose=0, \
 
     # Now let's start working our way down the tree
     node = NodePath(PandaNode('octree-root'))
-    for n in recr(quadrants, vdata, prim, type, maxDensity, verbose, splitIntoQuadrants):
+    for n in recr(quadrants, vdata, prim, type, maxDensity, verbose, splitIntoQuadrants, name=name):
         n.reparentTo(node)
 
     return node
